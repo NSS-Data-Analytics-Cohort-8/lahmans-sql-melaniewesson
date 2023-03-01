@@ -23,71 +23,27 @@ ORDER BY height ASC
 
 -- 3. Find all players in the database who played at Vanderbilt University. Create a list showing each player’s first and last names as well as the total salary they earned in the major leagues. Sort this list in descending order by the total salary earned. Which Vanderbilt player earned the most money in the majors?
 
-SELECT DISTINCT playerid, nameFirst, nameLast, SUM(salary) AS total_salary, schoolname
+SELECT namefirst, namelast, SUM(salary) AS total_salary
 FROM people
-FULL JOIN salaries
-USING (playerid)
-FULL JOIN collegeplaying
-USING (playerid)
-FULL JOIN schools
-USING (schoolid)
-WHERE schoolname = 'Vanderbilt University'
-GROUP BY playerid, nameFirst, nameLast, schoolnamesu
-ORDER BY total_salary DESC
-
-
-SELECT nameFirst, nameLast, SUM(salary) AS total_salary
-FROM (SELECT *
-	 FROM people
-	 JOIN 
-	 collegeplaying
-	 USING (playerid)
-	 JOIN schools
-	 USING (schoolid)
-	 WHERE schoolname= 'Vanderbilt University') AS subquery
 JOIN salaries
 USING (playerid)
-GROUP BY nameLast, nameFirst
-ORDER BY total_salary DESC
-
-SELECT SUM(salary)
-FROM salaries
-WHERE playerid = 'priceda01'
-
-SELECT playerid, salary, collegeplaying.yearid
-FROM people
-FULL JOIN collegeplaying
-USING (playerid)
-LEFT JOIN salaries
-USING (playerid)
-WHERE playerid = 'priceda01'
-
-SELECT *
-FROM collegeplaying
-WHERE playerid = 'priceda01'
+WHERE playerid IN 
+	(SELECT DISTINCT playerid
+		FROM people
+		FULL JOIN salaries
+		USING (playerid)
+		GROUP BY playerid, namefirst, namelast
+		INTERSECT
+		SELECT playerid
+		FROM collegeplaying
+		JOIN schools
+		USING (schoolid)
+		WHERE schoolname = 'Vanderbilt University')
+GROUP BY namefirst, namelast
+ORDER BY total_salary DESC;
 
 
-SELECT playerid
-FROM people
-INTERSECT
-SELECT playerid
-FROM collegeplaying
-WHERE playerid = 'priceda01'
-
-SELECT playerid, namefirst, namelast, SUM(salary)
-FROM people
-LEFT JOIN salaries
-USING (playerid)
-INTERSECT
-
-
-
-
-
-
-
-
---Answer: David Price earned $245,553,888 81,851,296
+--Answer: David Price earned $81,851,296
 	
 
 -- 4. Using the fielding table, group players into three groups based on their position: label players with position OF as "Outfield", those with position "SS", "1B", "2B", and "3B" as "Infield", and those with position "P" or "C" as "Battery". Determine the number of putouts made by each of these three groups in 2016.
