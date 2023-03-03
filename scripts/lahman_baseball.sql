@@ -17,6 +17,7 @@ LEFT JOIN teams
 USING (teamid)
 GROUP BY playerid, namefirst, namelast, height, G_all, teams.name
 ORDER BY height ASC
+LIMIT 1;
 
 -- Answer: Eddie Gaedel, 43 inches tall, played 1 game for the St. Louis Browns
 
@@ -50,8 +51,8 @@ ORDER BY total_salary DESC;
 
 SELECT SUM(po),
 	CASE WHEN pos = 'OF' THEN 'Outfield'
-	WHEN pos = 'C' OR pos = 'P' THEN 'Battery'
 	WHEN pos = 'SS' OR pos = '1B' OR pos = '2B' OR pos = '3B' THEN 'Infield'
+	WHEN pos = 'P' OR pos = 'C' THEN 'Battery'
 	END AS position_group
 FROM fielding
 WHERE yearID = 2016
@@ -59,13 +60,60 @@ GROUP BY position_group
 
 --Answer: Battery 41424, Infield 58934, Outfield 29560
 
-
    
 -- 5. Find the average number of strikeouts per game by decade since 1920. Round the numbers you report to 2 decimal places. Do the same for home runs per game. Do you see any trends?
    
+SELECT ROUND(SUM(so :: numeric)/SUM(g :: numeric),2) AS avg_so_per_game,
+	CASE WHEN yearid BETWEEN 1920 AND 1929 THEN '1920s'
+	WHEN yearid BETWEEN 1930 AND 1939 THEN '1930s'
+	WHEN yearid BETWEEN 1940 AND 1949 THEN '1940s'
+	WHEN yearid BETWEEN 1950 AND 1959 THEN '1950s'
+	WHEN yearid BETWEEN 1960 AND 1969 THEN '1960s'
+	WHEN yearid BETWEEN 1970 AND 1979 THEN '1970s'
+	WHEN yearid BETWEEN 1980 AND 1989 THEN '1980s'
+	WHEN yearid BETWEEN 1990 AND 1999 THEN '1990s'
+	WHEN yearid BETWEEN 2000 AND 2009 THEN '2000s'
+	WHEN yearid BETWEEN 2010 AND 2019 THEN '2010s'
+	END AS decade
+FROM teams
+GROUP BY decade
+ORDER BY decade
+
+SELECT ROUND(SUM(hr :: numeric)/SUM(g :: numeric),2) AS avg_hr_per_game,
+	CASE WHEN yearid BETWEEN 1920 AND 1929 THEN '1920s'
+	WHEN yearid BETWEEN 1930 AND 1939 THEN '1930s'
+	WHEN yearid BETWEEN 1940 AND 1949 THEN '1940s'
+	WHEN yearid BETWEEN 1950 AND 1959 THEN '1950s'
+	WHEN yearid BETWEEN 1960 AND 1969 THEN '1960s'
+	WHEN yearid BETWEEN 1970 AND 1979 THEN '1970s'
+	WHEN yearid BETWEEN 1980 AND 1989 THEN '1980s'
+	WHEN yearid BETWEEN 1990 AND 1999 THEN '1990s'
+	WHEN yearid BETWEEN 2000 AND 2009 THEN '2000s'
+	WHEN yearid BETWEEN 2010 AND 2019 THEN '2010s'
+	END AS decade
+FROM teams
+GROUP BY decade
+ORDER BY decade
+
+---Answer: players are progressively getting better: more homeruns, more strikeouts
 
 -- 6. Find the player who had the most success stealing bases in 2016, where __success__ is measured as the percentage of stolen base attempts which are successful. (A stolen base attempt results either in a stolen base or being caught stealing.) Consider only players who attempted _at least_ 20 stolen bases.
 	
+SELECT namefirst, namelast, steal_attempts, ROUND((sb/steal_attempts)*100,2) AS success_percentage
+FROM (
+	SELECT namefirst, namelast, (sb :: numeric + cs :: numeric) AS steal_attempts, sb, cs, yearid
+	FROM people
+	JOIN batting
+	USING (playerid)
+	WHERE sb <> 0
+	AND cs <> 0
+	AND yearid = 2016
+	) AS subquery
+WHERE steal_attempts >=20	
+GROUP BY namefirst, namelast, sb, steal_attempts
+ORDER BY success_percentage DESC
+
+--Answer: Chris Owings
 
 -- 7.  From 1970 – 2016, what is the largest number of wins for a team that did not win the world series? What is the smallest number of wins for a team that did win the world series? Doing this will probably result in an unusually small number of wins for a world series champion – determine why this is the case. Then redo your query, excluding the problem year. How often from 1970 – 2016 was it the case that a team with the most wins also won the world series? What percentage of the time?
 
