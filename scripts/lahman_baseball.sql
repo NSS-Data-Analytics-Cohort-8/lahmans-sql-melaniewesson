@@ -43,7 +43,9 @@ WHERE playerid IN
 GROUP BY namefirst, namelast
 ORDER BY total_salary DESC;
 
-
+SELECT SUM(salary)
+FROM salaries
+WHERE playerid = 'priceda01'
 --Answer: David Price earned $81,851,296
 	
 
@@ -62,24 +64,8 @@ GROUP BY position_group
 
    
 -- 5. Find the average number of strikeouts per game by decade since 1920. Round the numbers you report to 2 decimal places. Do the same for home runs per game. Do you see any trends?
-   
-SELECT ROUND(SUM(so :: numeric)/SUM(g :: numeric),2) AS avg_so_per_game,
-	CASE WHEN yearid BETWEEN 1920 AND 1929 THEN '1920s'
-	WHEN yearid BETWEEN 1930 AND 1939 THEN '1930s'
-	WHEN yearid BETWEEN 1940 AND 1949 THEN '1940s'
-	WHEN yearid BETWEEN 1950 AND 1959 THEN '1950s'
-	WHEN yearid BETWEEN 1960 AND 1969 THEN '1960s'
-	WHEN yearid BETWEEN 1970 AND 1979 THEN '1970s'
-	WHEN yearid BETWEEN 1980 AND 1989 THEN '1980s'
-	WHEN yearid BETWEEN 1990 AND 1999 THEN '1990s'
-	WHEN yearid BETWEEN 2000 AND 2009 THEN '2000s'
-	WHEN yearid BETWEEN 2010 AND 2019 THEN '2010s'
-	END AS decade
-FROM teams
-GROUP BY decade
-ORDER BY decade
 
-SELECT ROUND(SUM(hr :: numeric)/SUM(g :: numeric),2) AS avg_hr_per_game,
+SELECT ROUND(AVG(so),2) AS avg_so, ROUND(AVG(hr),2) AS avg_hr_per_game,
 	CASE WHEN yearid BETWEEN 1920 AND 1929 THEN '1920s'
 	WHEN yearid BETWEEN 1930 AND 1939 THEN '1930s'
 	WHEN yearid BETWEEN 1940 AND 1949 THEN '1940s'
@@ -91,7 +77,7 @@ SELECT ROUND(SUM(hr :: numeric)/SUM(g :: numeric),2) AS avg_hr_per_game,
 	WHEN yearid BETWEEN 2000 AND 2009 THEN '2000s'
 	WHEN yearid BETWEEN 2010 AND 2019 THEN '2010s'
 	END AS decade
-FROM teams
+FROM batting
 GROUP BY decade
 ORDER BY decade
 
