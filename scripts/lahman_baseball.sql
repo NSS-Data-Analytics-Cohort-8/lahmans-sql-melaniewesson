@@ -146,27 +146,25 @@ GROUP BY name, yearid, w
 ORDER BY w ASC
 
 --Answer 3: taking out the 1981 series, the lowest wins for a WS winner is 83 games for the St. Louis Cardinals in 2006
+
 --How often from 1970 – 2016 was it the case that a team with the most wins also won the world series? What percentage of the time?
 
-SELECT name, teamid, yearid, wswin, MAX(w) OVER
-	(PARTITION BY yearid) AS most_wins_per_year
-FROM (SELECT name, teamid, yearid, w, wswin
-FROM teams
-WHERE wswin = 'Y') AS winner
-WHERE yearid BETWEEN 1970 AND 2016
-AND teamid IN 
 
-with WCWinners AS
-	(Select name, teamid, yearid, w, wswin
-	FROM teams
-	WHERE wswin = 'Y')
+MOST WINS
+	SELECT name, yearid, w
+FROM teams
+WHERE w IN (SELECT MAX(w)
+		  FROM teams
+		   GROUP BY yearid)
+AND yearid BETWEEN 1970 and 2016
 	
-SELECT name, yearid,
-	MAX(w) OVER (PARTITION BY yearid) AS most_wins_per_year
-FROM teams
-WHERE teamid IN WCWinners
+WS WINNERS
+	SELECT name, yearid
+	FROM teams
+	WHERE wswin = 'Y'
+	AND yearid BETWEEN 1970 AND 2016)
 
-
+--Answer: STILL WORKIN ON IT
 
 
 -- 8. Using the attendance figures from the homegames table, find the teams and parks which had the top 5 average attendance per game in 2016 (where average attendance is defined as total attendance divided by number of games). Only consider parks where there were at least 10 games played. Report the park name, team name, and average attendance. Repeat for the lowest 5 average attendance.
