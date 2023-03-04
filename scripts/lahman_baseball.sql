@@ -135,22 +135,26 @@ ORDER BY w ASC
 
 --How often from 1970 – 2016 was it the case that a team with the most wins also won the world series? What percentage of the time?
 
-
-MOST WINS
-	SELECT name, yearid, w
-FROM teams
-WHERE w IN (SELECT MAX(w)
-		  FROM teams
-		   GROUP BY yearid)
-	
-WS WINNERS
-	SELECT name, yearid
+with maxwins AS (
+	SELECT yearid, MAX(w) AS mostwins
 	FROM teams
-	WHERE wswin = 'Y'
-	AND yearid BETWEEN 1970 AND 2016)
+	GROUP BY yearid
+	),
+cte AS (
+	SELECT t.yearid, t.name, mostwins, t.wswin, SUM(CASE WHEN wswin ='Y' THEN 1 ELSE 0 END) :: numeric AS wins
+FROM teams AS t
+LEFT JOIN maxwins AS m
+ON t.yearid = m.yearid AND t.w = m.mostwins
+WHERE t.yearid > 1969
+AND m.mostwins IS NOT NULL
+AND wswin IS NOT NULL
+GROUP BY t.yearid, t.name, mostwins, t.wswin
+ORDER BY t.yearid
+	)
+SELECT SUM(wins) OVER () / COUNT(yearid) OVER () *100 AS percent_winners
+FROM cte
 
---Answer: STILL WORKIN ON IT
-
+--Answer: 23.08%
 
 -- 8. Using the attendance figures from the homegames table, find the teams and parks which had the top 5 average attendance per game in 2016 (where average attendance is defined as total attendance divided by number of games). Only consider parks where there were at least 10 games played. Report the park name, team name, and average attendance. Repeat for the lowest 5 average attendance.
 
