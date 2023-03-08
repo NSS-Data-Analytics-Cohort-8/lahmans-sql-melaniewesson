@@ -65,7 +65,7 @@ GROUP BY position_group
    
 -- 5. Find the average number of strikeouts per game by decade since 1920. Round the numbers you report to 2 decimal places. Do the same for home runs per game. Do you see any trends?
 
-SELECT ROUND(AVG(so),2) AS avg_so, ROUND(AVG(hr),2) AS avg_hr_per_game,
+SELECT ROUND(SUM(so :: numeric)/(SUM(g :: numeric)/2),2)  AS avg_so, ROUND(SUM(hr :: numeric)/(SUM(g :: numeric)/2),2) AS avg_hr_per_game,
 	CASE WHEN yearid BETWEEN 1920 AND 1929 THEN '1920s'
 	WHEN yearid BETWEEN 1930 AND 1939 THEN '1930s'
 	WHEN yearid BETWEEN 1940 AND 1949 THEN '1940s'
@@ -77,7 +77,7 @@ SELECT ROUND(AVG(so),2) AS avg_so, ROUND(AVG(hr),2) AS avg_hr_per_game,
 	WHEN yearid BETWEEN 2000 AND 2009 THEN '2000s'
 	WHEN yearid BETWEEN 2010 AND 2019 THEN '2010s'
 	END AS decade
-FROM batting
+FROM teams
 GROUP BY decade
 ORDER BY decade
 
@@ -158,19 +158,24 @@ FROM cte
 
 -- 8. Using the attendance figures from the homegames table, find the teams and parks which had the top 5 average attendance per game in 2016 (where average attendance is defined as total attendance divided by number of games). Only consider parks where there were at least 10 games played. Report the park name, team name, and average attendance. Repeat for the lowest 5 average attendance.
 
-SELECT park_name, team, (attendance/games) AS avg_attendance
-FROM homegames
-JOIN parks
+
+SELECT park_name, h.team, t.name, (h.attendance/h.games) AS avg_attendance
+FROM homegames AS h
+JOIN parks AS p
 USING (park)
+JOIN teams AS t
+ON h.team = t.teamid AND h.year = t.yearid
 WHERE year = 2016
 AND games >= 10
 ORDER BY avg_attendance DESC
 LIMIT 5;
 
-SELECT park_name, team, (attendance/games) AS avg_attendance
-FROM homegames
-JOIN parks
+SELECT park_name, h.team, t.name, (h.attendance/h.games) AS avg_attendance
+FROM homegames AS h
+JOIN parks AS p
 USING (park)
+JOIN teams AS t
+ON h.team = t.teamid AND h.year = t.yearid
 WHERE year = 2016
 AND games >= 10
 ORDER BY avg_attendance ASC
