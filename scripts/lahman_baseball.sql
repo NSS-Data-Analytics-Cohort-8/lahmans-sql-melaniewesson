@@ -221,12 +221,23 @@ WHERE yearid = 2016
 AND people.debut :: date < '2006-01-01'
 ORDER BY max DESC;
 
-
-
-
 -- **Open-ended questions**
 
 -- 11. Is there any correlation between number of wins and team salary? Use data from 2000 and later to answer this question. As you do this analysis, keep in mind that salaries across the whole league tend to increase together, so you may want to look on a year-by-year basis.
+
+SELECT s.teamid, s.yearid, SUM(salary) AS teamsalary, t.w, 
+	AVG(SUM(salary)) OVER (PARTITION BY s.teamid) AS avg_team_salary,
+	AVG(t.w) OVER (PARTITION BY s.teamid) AS avg_wins,
+	SUM(salary)-(AVG(SUM(salary)) OVER (PARTITION BY s.teamid)) AS salary_diff,
+	t.w - (AVG(t.w) OVER (PARTITION BY s.teamid))AS win_diff
+FROM salaries AS s
+FULL JOIN teams AS t
+ON s.yearid = t.yearid
+AND s.teamid = t.teamid
+WHERE s.yearid >= 2000
+GROUP BY s.teamid, s.yearid, t.w
+ORDER BY teamid, yearid
+
 
 -- 12. In this question, you will explore the connection between number of wins and attendance.
 --     <ol type="a">
